@@ -1,0 +1,56 @@
+version: 2
+jobs:
+  Dependencias:
+    working_directory: ~/Microorganismos
+    docker:
+      - image: circleci/openjdk:8-jdk-stretch
+    steps:
+      - checkout
+      - run: mvn dependency:go-offline
+  Compilar:
+    working_directory: ~/Microorganismos
+    docker:
+      - image: circleci/openjdk:8-jdk-stretch
+    steps:
+      - checkout
+      - run: mvn compile -e -X
+  Testing:
+    working_directory: ~/Microorganismos
+    docker:
+      - image: circleci/openjdk:8-jdk-stretch
+    steps:
+      - run:
+          name: Las Pruebas
+          command: |
+            echo 'Haciendo Pruebas'
+      - checkout
+      - run: mvn test -e -X
+  Run-Package:
+    working_directory: ~/Microorganismos
+    docker:
+      - image: circleci/openjdk:8-jdk-stretch
+    steps:
+      - checkout
+      - run: mvn package -e -X
+workflows:
+  version: 2
+  Flujo-Trabajo:
+    jobs:
+      - Dependencias
+      - Compilar
+      - Aprobar-codigo:
+          type: approval
+          requires:
+            - Dependencias
+            - Compilar
+      - Testing:
+          requires:
+            - Aprobar-codigo
+            - Compilar
+      - Aprobar-Pruebas:
+          type: approval
+          requires:
+            - Testing
+      - Run-Package:
+          requires:
+            - Aprobar-Pruebas
