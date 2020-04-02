@@ -52,5 +52,3 @@ workflows:
           requires:
             - Testing
       - Run-Package:
-          requires:
-            - Aprobar-Pruebas
